@@ -24,7 +24,7 @@ enum class PhysicsCategory
 	None = 0,
 	Enemy = (1 << 0),    // 1
 	Projectile = (1 << 1),// 2
-	gameOverBox = (1 << 0), //3
+	gameOverBox = (2), //3
 	Player =(1 << 0),
 	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
 	/*None = 0x0001,
@@ -345,19 +345,19 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 
 	//auto nodeP = contact.getShapeB()->getBody()->getNode();
 	//auto nodeEnemyB = contact.getShapeA()->getBody()->getNode();
-	auto monst = contact.getShapeA()->getBody()->getNode();
-	auto endgameBox = contact.getShapeB()->getBody()->getNode();
-	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
-	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
+	auto monst = contact.getShapeA()->getBody()->getNode(); //enemy collides off game overbox
+	auto endgameBox = contact.getShapeB()->getBody()->getNode(); //endgame box collides with enemy
+	//auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
+	//auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
-
+	/*
 	 nodeEnemy->removeFromParent();//remove the enemy 
 	CCLOG("Removed");
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
 	nodeProjectile->removeFromParent();//remove the projectile 
 	CCLOG("point added");
 	score++;
-
+	*/
 
 
 	monst->removeFromParent();//remove the enemy 
@@ -374,6 +374,7 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 	{
 		this->doGameOver();
 	}
+	/*
 	__String * tempScore = __String::createWithFormat("score:%i", score);
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
@@ -386,7 +387,7 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 
 
 	nodeProjectile->removeFromParent();//remove the projectile 
-
+	*/
 	/*CCLOG("life lost ");
 	--lives;
 	__String * tempLives = __String::createWithFormat("Lives:%i", lives);
