@@ -5,6 +5,7 @@
 #include "Level_2Scene.h"
 #include "GameOverScene.h"
 #include "Waypoints.h"
+#include "EndGameScene.h"
 
 
 using namespace CocosDenshion; // namespace for audio engine 
@@ -21,9 +22,9 @@ USING_NS_CC;
 enum class PhysicsCategory
 {
 	None = 0,
-	Monster = (1 << 0),    // 1
-	endgameBox =(1<< 0),
+	Enemy = (1 << 0),    // 1
 	Projectile = (1 << 1),// 2
+	gameOverBox = (1 << 0), //3
 	Player =(1 << 0),
 	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
 	/*None = 0x0001,
@@ -99,11 +100,11 @@ bool GameScene::init()//initing the game so the scene can be made
 
 	//setting up the physics 
 	// 2
-	physicsGameOverBox->setDynamic(true);
+	physicsGameOverBox->setDynamic(false);
 	// 3
-	//physicsGameOverBox->setCategoryBitmask(true);
-	//->setCollisionBitmask((int)PhysicsCategory::None);
-	physicsGameOverBox->setContactTestBitmask(true);
+	physicsGameOverBox->setCategoryBitmask((int)PhysicsCategory::gameOverBox);
+	physicsGameOverBox->setCollisionBitmask((int)PhysicsCategory::None); //1
+	physicsGameOverBox->setContactTestBitmask((int)PhysicsCategory::Enemy);
 	gameOverBox->setPhysicsBody(physicsGameOverBox); //when added to screen the player dissaperars
 	gameOverBox->setVisible(false); //image of castle turhed off here makes the image transparnt
 
@@ -123,11 +124,11 @@ bool GameScene::init()//initing the game so the scene can be made
 
 	//setting up the physics 
 	// 2
-	physicsPlayer->setDynamic(true);
+	physicsPlayer->setDynamic(false);
 	// 3
 	physicsPlayer->setCategoryBitmask((int)PhysicsCategory::Player);
 	physicsPlayer->setCollisionBitmask((int)PhysicsCategory::None);
-	physicsPlayer->setContactTestBitmask((int)PhysicsCategory::Monster);
+	physicsPlayer->setContactTestBitmask((int)PhysicsCategory::Enemy);
 	_player->setPhysicsBody(physicsPlayer); //when added to screen the player dissaperars
 	
 	this->addChild(_player,towerfireRate);//adding the player to the scene
@@ -143,16 +144,16 @@ bool GameScene::init()//initing the game so the scene can be made
 	eventListener->onTouchBegan = CC_CALLBACK_2(GameScene::onTouchBegan, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(eventListener, _player);
 
-	// second tower will go here, have to get tbe collisions working for the aim
+	//second tower will go here, have to get tbe collisions working for the aim
 	//contact listener for enemy collision with player
-	//auto contactListener = EventListenerPhysicsContact::create();
-	//contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBeganEndGame, this);
-	//this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBeganEndGame, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+/*
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegan, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-
+	*/
 	//playing the background music 
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BACKGROUND_MUSIC_SFX, true);
 
@@ -220,11 +221,13 @@ void GameScene::addMonster(float dt)
 
 	//setting up the physics 
 	// 2
-	physicsBody->setDynamic(false);
+	physicsBody->setDynamic(true);
 	// 3
-	physicsBody->setCategoryBitmask((int)PhysicsCategory::Monster);
+	physicsBody->setCategoryBitmask((int)PhysicsCategory::Enemy);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
+	//physicsBody->setCollisionBitmask(2);
+	physicsBody->setContactTestBitmask((int)PhysicsCategory::gameOverBox);
 
 
 
@@ -244,7 +247,7 @@ void GameScene::addMonster(float dt)
 
 	// 2
 	int minDuration = 10.0;
-	int maxDuration = 14.0;
+	int maxDuration = 11.0;
 	int rangeDuration = maxDuration - minDuration;
 	int randomDuration = (rand() % rangeDuration) + minDuration;
 	// currentHp -= actionRemove;
@@ -287,7 +290,7 @@ bool GameScene::onTouchBegan(Touch * touch, Event *unused_event)
 	physicsBody->setDynamic(true);
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Projectile);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
-	physicsBody->setContactTestBitmask((int)PhysicsCategory::Monster);
+	physicsBody->setContactTestBitmask((int)PhysicsCategory::Enemy);
 	projectile->setPhysicsBody(physicsBody);
 
 
@@ -310,7 +313,7 @@ bool GameScene::onTouchBegan(Touch * touch, Event *unused_event)
 	return true;
 }
 
-
+/*
 bool GameScene::onContactBegan(PhysicsContact &contact)
 {
 	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
@@ -336,17 +339,34 @@ bool GameScene::onContactBegan(PhysicsContact &contact)
 	}
 
 	return true;
-}
+}*/
 bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 {
 
-	auto nodePlayer = contact.getShapeB()->getBody()->getNode();
-	auto nodeEnemyB = contact.getShapeA()->getBody()->getNode();
+	//auto nodeP = contact.getShapeB()->getBody()->getNode();
+	//auto nodeEnemyB = contact.getShapeA()->getBody()->getNode();
+	auto monst = contact.getShapeA()->getBody()->getNode();
+	auto endgameBox = contact.getShapeB()->getBody()->getNode();
+	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
+	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
-	//nodeEnemyB->removeFromParent();//remove the enemy 
+
+	 nodeEnemy->removeFromParent();//remove the enemy 
+	CCLOG("Removed");
+	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
+	nodeProjectile->removeFromParent();//remove the projectile 
+	CCLOG("point added");
+	score++;
+
+
+
+	monst->removeFromParent();//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
 
-
+	/*if ((2 == monst->getCollisionBitmask() && 1 == endgameBox-> getCollisionBitmask() || 1 == monst->getCollisionBitmask() && 2 == endgameBox->getCollisionBitmask()))
+	{
+		CCLOG("COllsion dectected");
+	}*/
 	towerHp--;
 	__String * tempLives = __String::createWithFormat("HP:%i", towerHp);
 	livesLabel->setString(tempLives->getCString());
@@ -354,9 +374,18 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 	{
 		this->doGameOver();
 	}
+	__String * tempScore = __String::createWithFormat("score:%i", score);
+	scoreLabel->setString(tempScore->getCString());
+	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
+
+	if (score == 10)
+	{
+		auto scene = Level_2Scene::createScene();
+		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	}
 
 
-	//nodeProjectile->removeFromParent();//remove the projectile 
+	nodeProjectile->removeFromParent();//remove the projectile 
 
 	/*CCLOG("life lost ");
 	--lives;
@@ -405,7 +434,7 @@ void GameScene::getHpDamage()
 void GameScene::doGameOver()
 {
 	if (!gameEnded) {
-		auto scene = GameOverScene::createScene();
+		auto scene = EndGameScene::createScene();
 		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 	}
 }
