@@ -24,8 +24,8 @@ enum class PhysicsCategory
 	None = 0,
 	Enemy = (1 << 0),    // 1
 	Projectile = (1 << 1),// 2
-	gameOverBox = (2), //3
-	Player =(1 << 0),
+	gameOverBox = (12 << 1), //3 //this needs to be the amount of enemmies that hit if not it's removed
+	Player =(6 << 1),
 	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
 	/*None = 0x0001,
 	Player = 0x0002,
@@ -90,10 +90,10 @@ bool GameScene::init()//initing the game so the scene can be made
 	//_background3 = _tileMap->layerNamed("Castle Objects");
 	//this->addChild(_tileMap);
 	gameOverBox = Sprite::create("castle.png");//creating sprite  for collisions when enemy hit after player on map
-	gameOverBox->setPosition(Vec2(winSize.width / 2, winSize.height / 2)); //seting postion for collision box
+	gameOverBox->setPosition(Vec2(winSize.width * 0.05, winSize.height * 0.5)); //seting postion for collision box
 	auto _gameoverboxPos = gameOverBox->getContentSize();
 
-	auto physicsGameOverBox = PhysicsBody::createBox(Size(_gameoverboxPos.width, _gameoverboxPos.height),
+	auto physicsGameOverBox = PhysicsBody::createBox(Size(40,720),
 		PhysicsMaterial(0.1f, 1.0f, 0.0f));
 //	auto physicsGameOverBox = PhysicsBody::createBox(Size(_gameoverboxPos.width, _gameoverboxPos.height),
 	//	PhysicsMaterial(0.1f, 1.0f, 0.0f));
@@ -225,7 +225,7 @@ void GameScene::addMonster(float dt)
 	// 3
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Enemy);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
-	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
+	//physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
 	//physicsBody->setCollisionBitmask(2);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::gameOverBox);
 
@@ -347,6 +347,20 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 	//auto nodeEnemyB = contact.getShapeA()->getBody()->getNode();
 	auto monst = contact.getShapeA()->getBody()->getNode(); //enemy collides off game overbox
 	auto endgameBox = contact.getShapeB()->getBody()->getNode(); //endgame box collides with enemy
+
+	monst->removeFromParent();//remove the enemy 
+	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
+	/*CCTexture2D* texture = CCTextureCache::sharedTextureCache()->textureForKey("star.png");  //going to add explosion particale effect when enemy hits the wall
+	CCParticleExplosion* firework = CCParticleExplosion::create();
+	firework->setTexture(texture);
+	*/
+	towerHp--;
+	__String * tempLives = __String::createWithFormat("HP:%i", towerHp);
+	livesLabel->setString(tempLives->getCString());
+	if (towerHp <= 0)
+	{
+		this->doGameOver();
+	}
 	//auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
 	//auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
@@ -360,20 +374,13 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 	*/
 
 
-	monst->removeFromParent();//remove the enemy 
-	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
+	
 
 	/*if ((2 == monst->getCollisionBitmask() && 1 == endgameBox-> getCollisionBitmask() || 1 == monst->getCollisionBitmask() && 2 == endgameBox->getCollisionBitmask()))
 	{
 		CCLOG("COllsion dectected");
 	}*/
-	towerHp--;
-	__String * tempLives = __String::createWithFormat("HP:%i", towerHp);
-	livesLabel->setString(tempLives->getCString());
-	if (towerHp <= 0)
-	{
-		this->doGameOver();
-	}
+	
 	/*
 	__String * tempScore = __String::createWithFormat("score:%i", score);
 	scoreLabel->setString(tempScore->getCString());
