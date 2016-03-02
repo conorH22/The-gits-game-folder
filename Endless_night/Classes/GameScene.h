@@ -55,7 +55,11 @@ public:
 	void GoToGameOverScene();
 	CC_SYNTHESIZE_RETAIN(Array*, _waypoints, Waypoints);
 	void chipPhysics();
-	
+	void awardGold(int gold);
+	bool checkCirclesCollide(CCPoint center1, float radius1, CCPoint center2, float radius2);
+	CCArray towerBases;
+	bool canBuyTower();
+    void loadTowerPositions();
 	CREATE_FUNC(GameScene);
 	
 };

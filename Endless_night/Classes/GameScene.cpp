@@ -24,14 +24,8 @@ enum class PhysicsCategory
 	None = 0,
 	Enemy = (1 << 0),    // 1
 	Projectile = (1 << 1),// 2
-	gameOverBox = (12 << 1), //3 //this needs to be the amount of enemmies that hit if not it's removed
-	Player =(6 << 1),
-	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
-	/*None = 0x0001,
-	Player = 0x0002,
-	Projectile = 0x0004, // 2
-	Monster = 0x0006,    // 1 */
-	
+	gameOverBox = (1 << 1),
+	Player = (1 << 1),
 };
 
 Scene* GameScene::createScene()
@@ -109,11 +103,6 @@ bool GameScene::init()//initing the game so the scene can be made
 	gameOverBox->setVisible(false); //image of castle turhed off here makes the image transparnt
 
 	this->addChild(gameOverBox);//adding the gameoverbox to the scene
-	//contact listener event for game overBox
-	//auto contactListenerGameOver = EventListenerPhysicsContact::create();
-	//contactListenerGameOver->onContactBegin = CC_CALLBACK_1(onContactBegan,this);
-	//_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListenerGameOver, this);
-
 	// 4
 	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
 	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
@@ -131,13 +120,11 @@ bool GameScene::init()//initing the game so the scene can be made
 	physicsPlayer->setContactTestBitmask((int)PhysicsCategory::Enemy);
 	_player->setPhysicsBody(physicsPlayer); //when added to screen the player dissaperars
 	
-	this->addChild(_player,towerfireRate);//adding the player to the scene
+	this->addChild(_player);//adding the player to the scene // not used towerfireRate
 
 	//adding monsters randomly at 1 second intervial 
 	srand((unsigned int)time(nullptr));
 	this->schedule(schedule_selector(GameScene::addMonster),1 );
-
-	//this->schedule(schedule_selector(GameScene::GoToGameOverScene), 20.0f);
 
 	//getting the mouse click form the player
 	auto eventListener = EventListenerTouchOneByOne::create();
@@ -146,13 +133,14 @@ bool GameScene::init()//initing the game so the scene can be made
 
 	//second tower will go here, have to get tbe collisions working for the aim
 	//contact listener for enemy collision with player
+	
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBeganEndGame, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-/*
-	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegan, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+   /*
+	auto contactListenerB = EventListenerPhysicsContact::create();
+	contactListenerB->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegan, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListenerB, this);
 	*/
 	//playing the background music 
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BACKGROUND_MUSIC_SFX, true);
@@ -165,7 +153,7 @@ bool GameScene::init()//initing the game so the scene can be made
 	backToMenu->setPosition(Point::ZERO);
 	this->addChild(backToMenu);
 
-	const float ScoreFontSize = 24;
+	const float ScoreFontSize = 18;
 	const float  ScorePostitionX = 24;
 	const float ScorePostitionY = 12;
 	score = 0;
@@ -178,14 +166,14 @@ bool GameScene::init()//initing the game so the scene can be made
 	scoreLabel->setPosition(winSize.width / 2 + origin.x, winSize.height * SCORE_FONT_SIZE);
 
 	this->addChild(scoreLabel, 1000);
-	const float livesFontSize = 24;
+	const float livesFontSize = 18;
 	const float  livesPostitionX = 24;
 	const float livesPostitionY = 24;
 	//lives = 3;
 	gameEnded = false;
 	towerHp = 5;
 
-	__String *tempLives = __String::createWithFormat("HP:%d", towerHp);
+	__String *tempLives = __String::createWithFormat("LVS:%d", towerHp);
 
 	livesLabel = Label::create(tempLives->getCString(), "fonts/Marker felt.ttf", winSize.height* LIVES_FONT_SIZE);
 	livesLabel->setColor(Color3B::RED);
@@ -197,14 +185,11 @@ bool GameScene::init()//initing the game so the scene can be made
 				// saving game data for high score
 	//CCUserDefault::sharedUserDefault()->setIntegerForKey("score", score); // breaks game needs work
 	//CCUserDefault::sharedUserDefault()->flush();
-
+	 this->loadTowerPositions();
 	//waypoints
 	this->addWayPoints();
 
 	return true;// returning that all is ok as is a bool(booean class)
-
-	
-
 }//end is init()
 
 void GameScene::addMonster(float dt)
@@ -225,7 +210,7 @@ void GameScene::addMonster(float dt)
 	// 3
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Enemy);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
-	//physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
+	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
 	//physicsBody->setCollisionBitmask(2);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::gameOverBox);
 
@@ -339,75 +324,48 @@ bool GameScene::onContactBegan(PhysicsContact &contact)
 	}
 
 	return true;
-}*/
+}
+*/
 bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 {
-
-	//auto nodeP = contact.getShapeB()->getBody()->getNode();
-	//auto nodeEnemyB = contact.getShapeA()->getBody()->getNode();
 	auto monst = contact.getShapeA()->getBody()->getNode(); //enemy collides off game overbox
 	auto endgameBox = contact.getShapeB()->getBody()->getNode(); //endgame box collides with enemy
 
 	monst->removeFromParent();//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
-	/*CCTexture2D* texture = CCTextureCache::sharedTextureCache()->textureForKey("star.png");  //going to add explosion particale effect when enemy hits the wall
-	CCParticleExplosion* firework = CCParticleExplosion::create();
-	firework->setTexture(texture);
-	*/
+	
+	
 	towerHp--;
 	__String * tempLives = __String::createWithFormat("HP:%i", towerHp);
 	livesLabel->setString(tempLives->getCString());
 	if (towerHp <= 0)
 	{
 		this->doGameOver();
-	}
-	//auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
-	//auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
-
-	/*
-	 nodeEnemy->removeFromParent();//remove the enemy 
-	CCLOG("Removed");
-	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
-	nodeProjectile->removeFromParent();//remove the projectile 
-	CCLOG("point added");
-	score++;
-	*/
-
-
-	
-
-	/*if ((2 == monst->getCollisionBitmask() && 1 == endgameBox-> getCollisionBitmask() || 1 == monst->getCollisionBitmask() && 2 == endgameBox->getCollisionBitmask()))
-	{
-		CCLOG("COllsion dectected");
-	}*/
-	
-	/*
-	__String * tempScore = __String::createWithFormat("score:%i", score);
-	scoreLabel->setString(tempScore->getCString());
-	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
-
-	if (score == 10)
-	{
-		auto scene = Level_2Scene::createScene();
-		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
-	}
-
-
-	nodeProjectile->removeFromParent();//remove the projectile 
-	*/
-	/*CCLOG("life lost ");
-	--lives;
-	__String * tempLives = __String::createWithFormat("Lives:%i", lives);
-	livesLabel->setString(tempLives->getCString());
-	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene
-	if (lives == 0)  // if tower gets hit player loses life
-	{
-	auto scene = EndGameScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
-	}*/
-
+	}	
 	return true;
 
+}
+ void GameScene::loadTowerPositions()
+{
+	CCArray* towerPositions = CCArray::createWithContentsOfFile("TowersPosition.plist");
+	CCObject* obj;
+	CCARRAY_FOREACH(towerPositions, obj)
+	{
+		//Converting to actual obj type
+		CCDictionary* towerPos = (CCDictionary*)obj;
+
+		//Creating sprite at position
+		CCSprite* towerBase = CCSprite::create("open_spot.png");
+		CCPoint p = ccp(towerPos->valueForKey("x")->intValue(),
+			towerPos->valueForKey("y")->intValue());
+		towerBase->setPosition(p);
+
+		//Adding to layer
+		this->addChild(towerBase);
+
+		//Adding to array
+		towerBases.addObject(towerBase);
+	}
 }
 void GameScene::SetIsScored()
 {
@@ -451,26 +409,41 @@ void GameScene::addWayPoints()
 	_waypoints = Array::create();
 	_waypoints->retain();
 
-	Waypoints* point1 = Waypoints::nodeWithTheGame(this, Point(840, 70));
+	Waypoints* point1 = Waypoints::nodeWithTheGame(this, Point(240, 70));
 	_waypoints->addObject(point1);
 
-	Waypoints* point2 = Waypoints::nodeWithTheGame(this, Point(70, 70));
+	Waypoints* point2 = Waypoints::nodeWithTheGame(this, Point(80, 70));
 	_waypoints->addObject(point2);
 
-	Waypoints* point3 = Waypoints::nodeWithTheGame(this, Point(70, 260));
+	Waypoints* point3 = Waypoints::nodeWithTheGame(this, Point(70, 220));
 	_waypoints->addObject(point3);
 
-	Waypoints* point4 = Waypoints::nodeWithTheGame(this, Point(890, 260));
+	Waypoints* point4 = Waypoints::nodeWithTheGame(this, Point(810, 230));
 	_waypoints->addObject(point4);
 
-	Waypoints* point5 = Waypoints::nodeWithTheGame(this, Point(840, 440));
+	Waypoints* point5 = Waypoints::nodeWithTheGame(this, Point(820, 423));
 	_waypoints->addObject(point5);
 
-	Waypoints* point6 = Waypoints::nodeWithTheGame(this, Point(-80, 440));
+	Waypoints* point6 = Waypoints::nodeWithTheGame(this, Point(-90, 240));
 	_waypoints->addObject(point6);
 }
+/*
+bool GameScene::canBuyTower()
+{
+	//return(playerGold - TOWER_COST >= 0);
+}
+*/
+void GameScene::awardGold(int gold)
+{
+	//playerGold += gold;
+	//ui_gold_lbl->setString(CCString::createWithFormat("GOLD %d", playerHP)->getCString());
+}
 
-
+bool checkCirclesCollide(CCPoint center1, float radius1, CCPoint center2, float radius2)
+{
+	float distance = ccpDistance(center1, center2);
+	return distance <= radius1 + radius2;
+}
 
 
 void GameScene::menuCloseCallback(Ref* pSender)// setting up the close button "quit"
@@ -482,29 +455,16 @@ void GameScene::menuCloseCallback(Ref* pSender)// setting up the close button "q
 #endif
 
 }
-
+//
 void GameScene::GoToMainMenuScene(Ref *sender)
 {
 	auto scene = MainMenuScene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 }
-/*
-void GameScene::chipPhysics()
-{
- #if CC_ENABLE_CHIPMUNK_INTEGRATION
-	//init chipmunk
-	//cpInitChpimunk
-	m_pSpace = cpSpaceNew();
-	m_pSpace->gravity = cpv(0, -100);
 
-	//physics debug layer
-	m_pDebugLayer = CCPhysicsDebugNode::create(m_pSpace);
-	this->addChild(m_pDebugLayer, Z_PHYSICS_DEBUG);
-#endif
-}
-*/
-//void GameScene::GoToGameOverScene(float dt)
-//{
+/*
+void GameScene::GoToGameOverScene(float dt)
+{
 	//auto scene = GameOverScene::createScene();
 	//Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
-//}
+}*/
