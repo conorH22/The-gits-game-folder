@@ -13,11 +13,15 @@ private:
 	Sprite* _player2;
 	unsigned int score;
 	cocos2d::Label * scoreLabel;
+	cocos2d::Label * livesLabel;
+	int towerHp;
+	bool gameOver;
+	bool gameEnded;
 
 public:
 	static cocos2d::Scene* createScene();// creating the scene from here 
 	virtual bool init();// creating the bool init class 
-	//void addMonster(float dt);// creating the monster class
+	void addMonster(float dt);// creating the monster class
 	void addMiniBoss();
 	Vector<Sprite*>EnemyList;
 	bool onTouchBegan(Touch * touch, Event *unused_event);
@@ -28,6 +32,8 @@ public:
 	bool GetIsScored();
 	void GoToMainMenuScene(Ref *sender);
 	void GoToGameOverScene();
+	//void GoToGameOverScene();
+	void doGameOver();
 
 	CREATE_FUNC(Mini_Boss_Scene);
 

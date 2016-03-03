@@ -20,7 +20,8 @@ USING_NS_CC;
 enum class PhysicsCategory
 {
 	None = 0,
-	Boss = (1 << 0),    // 1
+	Boss = (1 << 0),// 1
+	Monster=(1 << 0),
 	Projectile = (1 << 1), // 2
 	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
 };
@@ -58,7 +59,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	auto backgroundSprite = Sprite::create("backgroundCastle.png");// creating the background and adding a sprite
 	// setting the postition of the sprite on screen  using the size of the window
 	backgroundSprite->setPosition(Point(winSize.width / 2 + origin.x, winSize.height / 2 + origin.y));
-	this->addChild(backgroundSprite);///adding the bacground to the scene
+	this->addChild(backgroundSprite);//adding the bacground to the scene
 	// 4
 	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
 	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
@@ -67,8 +68,8 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	//this->schedule(schedule_selector(Mini_Boss_Scene::addMiniBoss));
 	// this is not used now as the mini boss is the only enemy on screen
 	//adding monsters randomly at ? per second intervial 
-	//srand((unsigned int)time(nullptr));
-	//this->schedule(schedule_selector(Mini_Boss_Scene::addMiniBoss));
+	srand((unsigned int)time(nullptr));
+	this->schedule(schedule_selector(Mini_Boss_Scene::addMonster),1);
 
 	//this->schedule(schedule_selector(GameScene::GoToGameOverScene), 20.0f);
 
@@ -88,19 +89,21 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BOSS_MUSIC_SFX, true);
 
 	// button to go back to the main menu 
+	// button to go back to the main menu 
 	auto menu = MenuItemImage::create("menu.png", "menuClicked.png", CC_CALLBACK_1(Mini_Boss_Scene::GoToMainMenuScene, this));
-	menu->setPosition(Point(winSize.width / 1.1 + origin.x, winSize.height / 1.1 + origin.y));// change the size of the image in your recouce folder to maxamise efficinty 
+	menu->setPosition(Point(winSize.width * 0.1, winSize.height * 1));// change the size of the image in your recouce folder to maxamise efficinty 
+
 
 	auto backToMenu = Menu::create(menu, NULL);
 	backToMenu->setPosition(Point::ZERO);
 	this->addChild(backToMenu);
 
-	const float ScoreFontSize = 24;
+	const float ScoreFontSize = 22;
 	const float  ScorePostitionX = 24;
 	const float ScorePostitionY = 12;
 	score = 0;
 
-	__String *tempScore = __String::createWithFormat("%i", score);
+	__String *tempScore = __String::createWithFormat("Score:%i", score);
 
 	scoreLabel = Label::create(tempScore->getCString(), "fonts/Marker felt.ttf", winSize.height* SCORE_FONT_SIZE);
 	scoreLabel->setColor(Color3B::RED);
@@ -108,12 +111,22 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	scoreLabel->setPosition(winSize.width / 2 + origin.x, winSize.height * SCORE_FONT_SIZE);
 
 	this->addChild(scoreLabel, 1000);
+	towerHp = 5;
+
+	__String *tempLives = __String::createWithFormat("Lives:%d", towerHp);
+
+	livesLabel = Label::create(tempLives->getCString(), "fonts/Marker felt.ttf", winSize.height* LIVES_FONT_SIZE);
+	livesLabel->setColor(Color3B::RED);
+	livesLabel->setAnchorPoint(ccp(0, 1));
+	livesLabel->setPosition(winSize.width / 3 + origin.x, winSize.height * LIVES_FONT_SIZE);
+
+	this->addChild(livesLabel, 10);
 	return true;// returning that all is ok as is a bool(booean class)
 
 
 
 }//end is init()
-/*
+
 void Mini_Boss_Scene::addMonster(float dt)
 {
 	auto monster = Sprite::create("monster.png");//making the enemy 
@@ -149,7 +162,7 @@ void Mini_Boss_Scene::addMonster(float dt)
 
 	// 2
 	int minDuration = 10.0;
-	int maxDuration = 14.0;
+	int maxDuration = 11.0;
 	int rangeDuration = maxDuration - minDuration;
 	int randomDuration = (rand() % rangeDuration) + minDuration;
 
@@ -159,7 +172,7 @@ void Mini_Boss_Scene::addMonster(float dt)
 	auto actionRemove = RemoveSelf::create();
 	monster->runAction(Sequence::create(actionMove, actionRemove, nullptr));
 }//end of monster 
-*/// this is for adding the monsters to the scene , not used at the moment
+// this is for adding the monsters to the scene , not used at the moment
 
 void Mini_Boss_Scene::addMiniBoss()
 {
@@ -206,8 +219,12 @@ void Mini_Boss_Scene::addMiniBoss()
 	//moving and taking off when collided 
 	auto actionMove = MoveTo::create(randomDuration, Vec2(-MiniBossContentSize.width / 2, randomY));
 	auto actionRemove = RemoveSelf::create();
+	auto delay = DelayTime::create(60.0f);
+	// create a sequence
+	auto delaySequence = Sequence::create(delay, delay->clone(), delay->clone(),
+		delay->clone(), nullptr);
 	
-	MiniBoss->runAction(Sequence::create(actionMove, actionRemove, nullptr));
+	MiniBoss->runAction(Sequence::create( delay,actionMove, actionRemove, nullptr));
 
 }// end of mini boss
 
@@ -276,11 +293,11 @@ bool Mini_Boss_Scene::onContactBegan(PhysicsContact &contact)
 	score++;
 
 
-	__String * tempScore = __String::createWithFormat("%i", score);
+	__String * tempScore = __String::createWithFormat("Score:%i", score);
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
-	if (score == 1)
+	if (score == 40)
 	{
 		auto scene = EndGameScene::createScene();
 		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));

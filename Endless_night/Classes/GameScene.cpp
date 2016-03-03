@@ -33,7 +33,7 @@ Scene* GameScene::createScene()
 	// 'scene' is an autorelease object
 	auto scene = Scene::createWithPhysics();//scene created with physics
 	scene->getPhysicsWorld()->setGravity(Vec2(0, 0));//setting the gravity to fall in whaterver way via x/y coordnate 
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);//red box around colisions
+	//scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);//red box around colisions
 
 	// 'layer' is an autorelease object
 	auto layer = GameScene::create();//creating the game layer 
@@ -105,7 +105,7 @@ bool GameScene::init()//initing the game so the scene can be made
 	this->addChild(gameOverBox);//adding the gameoverbox to the scene
 	// 4
 	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
-	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
+	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.6));//setting the players location 
 	auto playerSize = _player->getContentSize();
 
 	auto physicsPlayer = PhysicsBody::createBox(Size(playerSize.width, playerSize.height),
@@ -133,27 +133,27 @@ bool GameScene::init()//initing the game so the scene can be made
 
 	//second tower will go here, have to get tbe collisions working for the aim
 	//contact listener for enemy collision with player
-	
+	/*
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(GameScene::onContactBeganEndGame, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
-   /*
+   */
 	auto contactListenerB = EventListenerPhysicsContact::create();
 	contactListenerB->onContactBegin = CC_CALLBACK_1(GameScene::onContactBegan, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListenerB, this);
-	*/
+	
 	//playing the background music 
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BACKGROUND_MUSIC_SFX, true);
 
 	// button to go back to the main menu 
 	auto menu = MenuItemImage::create("menu.png", "menuClicked.png", CC_CALLBACK_1(GameScene::GoToMainMenuScene, this));
-	menu->setPosition(Point(winSize.width / 1.1 + origin.x, winSize.height / 1.1 + origin.y));// change the size of the image in your recouce folder to maxamise efficinty 
+	menu->setPosition(Point(winSize.width * 0.1, winSize.height * 1));// change the size of the image in your recouce folder to maxamise efficinty 
 
 	auto backToMenu = Menu::create(menu, NULL);
 	backToMenu->setPosition(Point::ZERO);
 	this->addChild(backToMenu);
 
-	const float ScoreFontSize = 18;
+	const float ScoreFontSize = 16;
 	const float  ScorePostitionX = 24;
 	const float ScorePostitionY = 12;
 	score = 0;
@@ -166,14 +166,14 @@ bool GameScene::init()//initing the game so the scene can be made
 	scoreLabel->setPosition(winSize.width / 2 + origin.x, winSize.height * SCORE_FONT_SIZE);
 
 	this->addChild(scoreLabel, 1000);
-	const float livesFontSize = 18;
+	const float livesFontSize = 16;
 	const float  livesPostitionX = 24;
 	const float livesPostitionY = 24;
 	//lives = 3;
 	gameEnded = false;
-	towerHp = 5;
+	towerHp = 15;
 
-	__String *tempLives = __String::createWithFormat("LVS:%d", towerHp);
+	__String *tempLives = __String::createWithFormat("Lives:%d", towerHp);
 
 	livesLabel = Label::create(tempLives->getCString(), "fonts/Marker felt.ttf", winSize.height* LIVES_FONT_SIZE);
 	livesLabel->setColor(Color3B::RED);
@@ -181,15 +181,15 @@ bool GameScene::init()//initing the game so the scene can be made
 	livesLabel->setPosition(winSize.width / 3 + origin.x, winSize.height * LIVES_FONT_SIZE);
 
 	this->addChild(livesLabel, 10);
-	return true;// returning that all is ok as is a bool(booean class)
+	// returning that all is ok as is a bool(booean class)
 				// saving game data for high score
 	//CCUserDefault::sharedUserDefault()->setIntegerForKey("score", score); // breaks game needs work
 	//CCUserDefault::sharedUserDefault()->flush();
-	 this->loadTowerPositions();
+	//this->loadTowerPositions(); // breaks game not working yet
 	//waypoints
 	this->addWayPoints();
 
-	return true;// returning that all is ok as is a bool(booean class)
+return true;// returning that all is ok as is a bool(booean class)
 }//end is init()
 
 void GameScene::addMonster(float dt)
@@ -202,7 +202,7 @@ void GameScene::addMonster(float dt)
 	//giving the monster some attributes 
 	auto monsterSize = monster->getContentSize();
 	auto physicsBody = PhysicsBody::createBox(Size(monsterSize.width, monsterSize.height),
-		PhysicsMaterial(0.1f, 1.0f, 0.0f));
+		PhysicsMaterial(0.0, 0.0f, 0.0f)); //weight, bouncy, sharpness
 
 	//setting up the physics 
 	// 2
@@ -211,8 +211,9 @@ void GameScene::addMonster(float dt)
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Enemy);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
-	//physicsBody->setCollisionBitmask(2);
+	//physicsBody->setContactTestBitmask((int)PhysicsCategory::Player);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::gameOverBox);
+	
 
 
 
@@ -298,14 +299,14 @@ bool GameScene::onTouchBegan(Touch * touch, Event *unused_event)
 	return true;
 }
 
-/*
+
 bool GameScene::onContactBegan(PhysicsContact &contact)
 {
-	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
-	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
+	auto nodeProjectile = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
+	auto nodeEnemy = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
 
-	nodeEnemy->removeFromParent();//remove the enemy 
+	nodeEnemy->removeFromParent();//remove the enemy  and cleans up accord to doc
 	CCLOG("Removed");
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
 	nodeProjectile->removeFromParent();//remove the projectile 
@@ -313,7 +314,7 @@ bool GameScene::onContactBegan(PhysicsContact &contact)
 	score++;
 
 
-	__String * tempScore = __String::createWithFormat("score:%i", score);
+	__String * tempScore = __String::createWithFormat("Score:%i", score);
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
@@ -325,18 +326,18 @@ bool GameScene::onContactBegan(PhysicsContact &contact)
 
 	return true;
 }
-*/
+/*  //enemy collision between enemy and gameOverbox
 bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 {
-	auto monst = contact.getShapeA()->getBody()->getNode(); //enemy collides off game overbox
-	auto endgameBox = contact.getShapeB()->getBody()->getNode(); //endgame box collides with enemy
+	auto endgameBox = contact.getShapeA()->getBody()->getNode(); //enemy collides off game overbox
+	auto monst = contact.getShapeB()->getBody()->getNode(); //endgame box collides with enemy
 
-	monst->removeFromParent();//remove the enemy 
+	monst->removeFromParentAndCleanup(false);//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
-	
+	//endgameBox->removeFromParent();//removes 
 	
 	towerHp--;
-	__String * tempLives = __String::createWithFormat("HP:%i", towerHp);
+	__String * tempLives = __String::createWithFormat("Lives:%i", towerHp);
 	livesLabel->setString(tempLives->getCString());
 	if (towerHp <= 0)
 	{
@@ -344,10 +345,10 @@ bool GameScene::onContactBeganEndGame(PhysicsContact &contact)
 	}	
 	return true;
 
-}
+}*/
  void GameScene::loadTowerPositions()
 {
-	CCArray* towerPositions = CCArray::createWithContentsOfFile("TowersPosition.plist");
+	CCArray* towerPositions = CCArray::createWithContentsOfFile("TowersPosition.xml");
 	CCObject* obj;
 	CCARRAY_FOREACH(towerPositions, obj)
 	{
@@ -461,7 +462,6 @@ void GameScene::GoToMainMenuScene(Ref *sender)
 	auto scene = MainMenuScene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 }
-
 /*
 void GameScene::GoToGameOverScene(float dt)
 {

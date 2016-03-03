@@ -84,11 +84,12 @@ bool Level_3_Scene::init()//initing the game so the scene can be made
 
 	//playing the background music 
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BOSS_MUSIC_SFX, true);
-
+	
 	// button to go back to the main menu 
 	auto menu = MenuItemImage::create("menu.png", "menuClicked.png", CC_CALLBACK_1(Level_3_Scene::GoToMainMenuScene, this));
-	menu->setPosition(Point(winSize.width / 1.1 + origin.x, winSize.height / 1.1 + origin.y));// change the size of the image in your recouce folder to maxamise efficinty 
+	menu->setPosition(Point(winSize.width * 0.1, winSize.height * 1));// change the size of the image in your recouce folder to maxamise efficinty 
 
+	
 	auto backToMenu = Menu::create(menu, NULL);
 	backToMenu->setPosition(Point::ZERO);
 	this->addChild(backToMenu);
@@ -98,7 +99,7 @@ bool Level_3_Scene::init()//initing the game so the scene can be made
 	const float ScorePostitionY = 12;
 	score = 0;
 
-	__String *tempScore = __String::createWithFormat("%i", score);
+	__String *tempScore = __String::createWithFormat("Score:%i", score);
 
 	scoreLabel = Label::create(tempScore->getCString(), "fonts/Marker felt.ttf", winSize.height* SCORE_FONT_SIZE);
 	scoreLabel->setColor(Color3B::RED);
@@ -106,6 +107,17 @@ bool Level_3_Scene::init()//initing the game so the scene can be made
 	scoreLabel->setPosition(winSize.width / 2 + origin.x, winSize.height * SCORE_FONT_SIZE);
 
 	this->addChild(scoreLabel, 1000);
+
+	towerHp = 5;
+
+	__String *tempLives = __String::createWithFormat("Lives:%d", towerHp);
+
+	livesLabel = Label::create(tempLives->getCString(), "fonts/Marker felt.ttf", winSize.height* LIVES_FONT_SIZE);
+	livesLabel->setColor(Color3B::RED);
+	livesLabel->setAnchorPoint(ccp(0, 1));
+	livesLabel->setPosition(winSize.width / 3 + origin.x, winSize.height * LIVES_FONT_SIZE);
+
+	this->addChild(livesLabel, 10);
 	return true;// returning that all is ok as is a bool(booean class)
 
 
@@ -223,7 +235,7 @@ bool Level_3_Scene::onContactBegan(PhysicsContact &contact)
 	score++;
 
 
-	__String * tempScore = __String::createWithFormat("%i", score);
+	__String * tempScore = __String::createWithFormat("Score:%i", score);
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
