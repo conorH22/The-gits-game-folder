@@ -3,6 +3,7 @@
 #include "MainMenuScene.h"
 #include "Definitions.h"
 #include "Level_3_scene.h"
+#include "Level3SplashScene.h"
 #include "GameOverScene.h"
 #include "LooseScene.h"
 
@@ -67,7 +68,7 @@ bool Level_2Scene::init()//initing the game so the scene can be made
 	backgroundSprite->setPosition(Point(winSize.width / 2 + origin.x, winSize.height / 2 + origin.y));
 	this->addChild(backgroundSprite);///adding the bacground to the scene
 	// 4
-	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
+	_player = Sprite::create("Knight.png");//creating the player, player is made in the header file 
 	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
 	this->addChild(_player);//adding the player to the scene
 
@@ -160,7 +161,7 @@ bool Level_2Scene::init()//initing the game so the scene can be made
 
 void Level_2Scene::addMonster(float dt)
 {
-	auto monster = Sprite::create("monster.png");//making the enemy 
+	auto monster = Sprite::create("Shadow1.png");//making the enemy 
 
 	//giving the monster some attributes 
 	auto monsterSize = monster->getContentSize();
@@ -169,7 +170,7 @@ void Level_2Scene::addMonster(float dt)
 
 	//setting up the physics 
 	// 2
-	physicsBody->setDynamic(false);
+	physicsBody->setDynamic(true);
 	// 3
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Monster);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
@@ -179,6 +180,21 @@ void Level_2Scene::addMonster(float dt)
 
 
 	monster->setPhysicsBody(physicsBody);// adding monster to the physics engine so it can be colided 
+	
+	Vector<SpriteFrame*> animFrames(4);
+
+	for (int i = 1; i < 5; i++)
+	{
+		std::stringstream ss;
+		ss << "Shadow" << i << ".png";
+		String str = ss.str();
+		auto frame = SpriteFrame::create(ss.str(), Rect(0, 0, 60, 105));
+		animFrames.pushBack(frame);
+	}
+
+	auto animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
+	auto animate = Animate::create(animation);
+	monster->runAction(RepeatForever::create(animate));
 	// 1
 	// giving the monster some movement and coordnates
 	auto monsterContentSize = monster->getContentSize();
@@ -192,8 +208,8 @@ void Level_2Scene::addMonster(float dt)
 	this->addChild(monster);//adding enemy to the layer 
 
 	// 2
-	int minDuration = 10.0;
-	int maxDuration = 14.0;
+	int minDuration = 3.0;
+	int maxDuration = 30.0;
 	int rangeDuration = maxDuration - minDuration;
 	int randomDuration = (rand() % rangeDuration) + minDuration;
 
@@ -220,7 +236,7 @@ bool Level_2Scene::onTouchBegan(Touch * touch, Event *unused_event)
 	}
 
 	// 4
-	auto projectile = Sprite::create("cannonball.png");//making the projectile 
+	auto projectile = Sprite::create("Spear.png");//making the projectile 
 	projectile->setPosition(_player->getPosition());
 	this->addChild(projectile);//adding it to the layer 
 
@@ -261,7 +277,7 @@ bool Level_2Scene::onContactBegan(PhysicsContact &contact)
 	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
 	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
-
+	if(nodeEnemy)
 	nodeEnemy->removeFromParent();//remove the enemy 
 	CCLOG("removed");
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
@@ -274,9 +290,9 @@ bool Level_2Scene::onContactBegan(PhysicsContact &contact)
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
-	if (score == 20)
+	if (score == 1)
 	{
-		auto scene = Level_3_Scene::createScene();
+		auto scene = Level3SplashScene::createScene();
 		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 	}
 

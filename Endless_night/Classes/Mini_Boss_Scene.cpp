@@ -61,7 +61,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	backgroundSprite->setPosition(Point(winSize.width / 2 + origin.x, winSize.height / 2 + origin.y));
 	this->addChild(backgroundSprite);//adding the bacground to the scene
 	// 4
-	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
+	_player = Sprite::create("Knight.png");//creating the player, player is made in the header file 
 	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
 	this->addChild(_player);//adding the player to the scene
 	addMiniBoss();
@@ -89,7 +89,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	SimpleAudioEngine::getInstance()->playBackgroundMusic(BOSS_MUSIC_SFX, true);
 
 	// button to go back to the main menu 
-	// button to go back to the main menu 
+
 	auto menu = MenuItemImage::create("menu.png", "menuClicked.png", CC_CALLBACK_1(Mini_Boss_Scene::GoToMainMenuScene, this));
 	menu->setPosition(Point(winSize.width * 0.1, winSize.height * 1));// change the size of the image in your recouce folder to maxamise efficinty 
 
@@ -129,7 +129,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 
 void Mini_Boss_Scene::addMonster(float dt)
 {
-	auto monster = Sprite::create("monster.png");//making the enemy 
+	auto monster = Sprite::create("Shadow1.png");//making the enemy 
 
 	//giving the monster some attributes 
 	auto monsterSize = monster->getContentSize();
@@ -148,7 +148,21 @@ void Mini_Boss_Scene::addMonster(float dt)
 
 
 	monster->setPhysicsBody(physicsBody);// adding monster to the physics engine so it can be colided 
-	// 1
+	Vector<SpriteFrame*> animFrames(4);
+
+	for (int i = 1; i < 5; i++)
+	{
+		std::stringstream ss;
+		ss << "Shadow" << i << ".png";
+		String str = ss.str();
+		auto frame = SpriteFrame::create(ss.str(), Rect(0, 0, 60, 105));
+		animFrames.pushBack(frame);
+	}
+
+	auto animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
+	auto animate = Animate::create(animation);
+	monster->runAction(RepeatForever::create(animate));
+										 // 1
 	// giving the monster some movement and coordnates
 	auto monsterContentSize = monster->getContentSize();
 	auto selfContentSize = this->getContentSize();
@@ -190,14 +204,25 @@ void Mini_Boss_Scene::addMiniBoss()
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Boss);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
+//  animation for miniboss now used atm
+	Vector<SpriteFrame*> animFrame(3); //use to test if object is their on right side screen
 
-
-
-
+	for (int i = 1; i < 4; i++)
+	{
+		std::stringstream ss;
+		ss << "miniboss" << i << ".png";
+		String str = ss.str();
+		auto frame = SpriteFrame::create(ss.str(), Rect(0, 0, 500, 400));
+		animFrame.pushBack(frame);
+	}
+	auto animation = Animation::createWithSpriteFrames(animFrame, 0.5f);
+	auto animate = Animate::create(animation);
+	MiniBoss->runAction(RepeatForever::create(animate));
+	
 	MiniBoss->setPhysicsBody(physicsBody);// adding monster to the physics engine so it can be colided 
 	// 1
 	// giving the monster some movement and coordnates
-	auto MiniBossContentSize = MiniBoss->getContentSize();
+	auto MiniBossContentSize = MiniBoss->getContentSize(); // wasn't auto now auto
 	auto selfContentSize = this->getContentSize();
 	int minY = MiniBossContentSize.height / 2;
 	int maxY = selfContentSize.height - MiniBossContentSize.height / 2;
@@ -210,7 +235,7 @@ void Mini_Boss_Scene::addMiniBoss()
 	this->addChild(MiniBoss);//adding enemy to the layer 
 
 	// 2
-	int minDuration = 10.0;
+	int minDuration = 10.0;  //min and max different  was 9.0 and 30.0 now 10.0 and 14.0
 	int maxDuration = 14.0;
 	int rangeDuration = maxDuration - minDuration;
 	int randomDuration = (rand() % rangeDuration) + minDuration;
@@ -244,7 +269,7 @@ bool Mini_Boss_Scene::onTouchBegan(Touch * touch, Event *unused_event)
 	}
 
 	// 4
-	auto projectile = Sprite::create("cannonball.png");//making the projectile 
+	auto projectile = Sprite::create("spear.png");//making the projectile 
 	projectile->setPosition(_player->getPosition());
 	this->addChild(projectile);//adding it to the layer 
 
@@ -285,7 +310,7 @@ bool Mini_Boss_Scene::onContactBegan(PhysicsContact &contact)
 	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
 	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
-
+	if (nodeEnemy)
 	nodeEnemy->removeFromParent();//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
 	nodeProjectile->removeFromParent();//remove the projectile 
@@ -297,7 +322,7 @@ bool Mini_Boss_Scene::onContactBegan(PhysicsContact &contact)
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
-	if (score == 40)
+	if (score == 1)
 	{
 		auto scene = EndGameScene::createScene();
 		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));

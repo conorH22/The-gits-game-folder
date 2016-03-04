@@ -25,15 +25,18 @@ bool TheOptionsScene::init()
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
 
-	auto backgroundSprite = Sprite::create("background.png");
+	auto backgroundSprite = Sprite::create("HowToPlay.png");
 	backgroundSprite->setPosition(Point(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+	backgroundSprite->setScale(0.5);
 	this->addChild(backgroundSprite);
 
 	auto back = MenuItemImage::create("back_button.png", "back_button.png", CC_CALLBACK_1(TheOptionsScene::GoToMainMenuScene, this));
-	back->setPosition(Point(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-
+	back->setPosition(Point(visibleSize.width / 2 + origin.x, visibleSize.height / 6 + origin.y));
+	
 	auto back_button = Menu::create(back, NULL);
 	back_button->setPosition(Point::ZERO);
+
+
 	this->addChild(back_button);
 
 	return true;

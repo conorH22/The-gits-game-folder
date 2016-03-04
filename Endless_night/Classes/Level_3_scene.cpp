@@ -2,8 +2,10 @@
 #include "SimpleAudioEngine.h"//iporting the audio engine
 #include "MainMenuScene.h"
 #include "Definitions.h"
+#include "Level4SplashScene.h"
 #include "Mini_Boss_Scene.h"
 #include "GameOverScene.h"
+#include <iostream>
 
 
 using namespace CocosDenshion; // namespace for audio engine 
@@ -60,7 +62,7 @@ bool Level_3_Scene::init()//initing the game so the scene can be made
 	backgroundSprite->setPosition(Point(winSize.width / 2 + origin.x, winSize.height / 2 + origin.y));
 	this->addChild(backgroundSprite);///adding the bacground to the scene
 	// 4
-	_player = Sprite::create("cannon.png");//creating the player, player is made in the header file 
+	_player = Sprite::create("Knight.png");//creating the player, player is made in the header file 
 	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
 	this->addChild(_player);//adding the player to the scene
 
@@ -141,6 +143,20 @@ void Level_3_Scene::addMonster(float dt)
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
 
+	Vector<SpriteFrame*> animFrames(4);
+
+	for (int i = 1; i < 5; i++)
+	{
+		std::stringstream ss;
+		ss << "Shadow" << i << ".png";
+		String str = ss.str();
+		auto frame = SpriteFrame::create(ss.str(), Rect(0, 0, 60, 105));
+		animFrames.pushBack(frame);
+	}
+
+	auto animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
+	auto animate = Animate::create(animation);
+	monster->runAction(RepeatForever::create(animate));
 
 
 
@@ -158,8 +174,8 @@ void Level_3_Scene::addMonster(float dt)
 	this->addChild(monster);//adding enemy to the layer 
 
 	// 2
-	int minDuration = 10.0;
-	int maxDuration = 11.0;
+	int minDuration = 9.0;
+	int maxDuration = 30.0;
 	int rangeDuration = maxDuration - minDuration;
 	int randomDuration = (rand() % rangeDuration) + minDuration;
 
@@ -186,7 +202,7 @@ bool Level_3_Scene::onTouchBegan(Touch * touch, Event *unused_event)
 	}
 
 	// 4
-	auto projectile = Sprite::create("cannonball.png");//making the projectile 
+	auto projectile = Sprite::create("Spear.png");//making the projectile 
 	projectile->setPosition(_player->getPosition());
 	this->addChild(projectile);//adding it to the layer 
 
@@ -227,7 +243,7 @@ bool Level_3_Scene::onContactBegan(PhysicsContact &contact)
 	auto nodeEnemy = contact.getShapeA()->getBody()->getNode();//could be enemy or visa veras 
 	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
-
+	if(nodeEnemy)
 	nodeEnemy->removeFromParent();//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
 	nodeProjectile->removeFromParent();//remove the projectile 
@@ -239,9 +255,9 @@ bool Level_3_Scene::onContactBegan(PhysicsContact &contact)
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
-	if (score == 30)
+	if (score == 3)
 	{
-		auto scene = Mini_Boss_Scene::createScene();
+		auto scene = Level4SplashScene::createScene();
 		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 	}
 

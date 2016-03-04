@@ -38,7 +38,7 @@ public:
 	void addMonster(float dt);// creating the monster class
 	bool onTouchBegan(Touch * touch, Event *unused_event);
 	bool onContactBegan(PhysicsContact &contact);
-	bool onContactBeganEndGame(PhysicsContact &contact);
+	bool onContactBeganEndGame(cocos2d::Touch *touch, cocos2d::Event *event);
 	void menuCloseCallback(cocos2d::Ref* pSender);
 	bool scored;
 	bool livesLeft;

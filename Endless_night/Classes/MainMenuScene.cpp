@@ -2,6 +2,7 @@
 
 #include "MainMenuScene.h"
 #include "GameScene.h"
+#include "Level1SplashScene.h"
 #include "Definitions.h"
 #include "TheOptionsScene.h"
 #include "SimpleAudioEngine.h"
@@ -58,8 +59,10 @@ bool MainMenuScene::init()
 
 	//button mapping to other screens
 
-	//when click play it goes to the game scene
-	auto NewGame = MenuItemImage::create("newGame.png","newGameClicked.png",CC_CALLBACK_1(MainMenuScene::GoToGameScene,this));
+	//when click play it goes to the game scene note when clicked splashscreen appers with level instructions/game rules
+	//auto NewGame = MenuItemImage::create("newGame.png","newGameClicked.png",CC_CALLBACK_1(MainMenuScene::GoToGameScene,this));
+	//NewGame->setPosition(Point(visibleSize.width / 5 + origin.x, visibleSize.height / 5 + origin.y));
+	auto NewGame = MenuItemImage::create("newGame.png", "newGameClicked.png", CC_CALLBACK_1(MainMenuScene::GoToLevel1SplashScene, this));
 	NewGame->setPosition(Point(visibleSize.width / 5 + origin.x, visibleSize.height / 5 + origin.y));
 
 	//options
@@ -88,6 +91,12 @@ bool MainMenuScene::init()
 void MainMenuScene::GoToGameScene(Ref *sender)//go to game scene method implementation 
 {
 	auto scene = GameScene::createScene();
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+}
+
+void MainMenuScene::GoToLevel1SplashScene(Ref *sender)//go to game scene method implementation 
+{
+	auto scene = Level1SplashScene::createScene();
 	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
 }
 
