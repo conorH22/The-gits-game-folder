@@ -37,10 +37,10 @@ bool SplashScene::init()
 
 	this->scheduleOnce(schedule_selector(SplashScene::goToMainMenuScene), DISPLAY_TIME_SPLASH_SCENE);//going to the main menu 
 
-	auto backgroundSprite = Sprite::create("Super happy funtime studios.png");//image for the splash screen 
+	auto backgroundSprite = Sprite::create("SuperHappyFunTime.png");//image for the splash screen 
 	backgroundSprite->setPosition(Point(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
 	this->addChild(backgroundSprite);
-	SimpleAudioEngine::getInstance()->playEffect(SPLASH_SCREEN_SOUND_SFX);//splash scrren 
+	SimpleAudioEngine::getInstance()->playEffect(SPLASH_SCREEN_SOUND_SFX);//splash screen
 
 	return true;
 
@@ -49,7 +49,7 @@ bool SplashScene::init()
 void SplashScene::goToMainMenuScene(float dt)
 {
 	auto scene = MainMenuScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 
 }
 

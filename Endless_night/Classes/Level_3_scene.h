@@ -13,10 +13,7 @@ private:
 	Sprite* _player2;
 	unsigned int score;
 	cocos2d::Label * scoreLabel;
-	cocos2d::Label * livesLabel;
-	int towerHp;
-	bool gameOver;
-	bool gameEnded;
+
 public:
 	static cocos2d::Scene* createScene();// creating the scene from here 
 	virtual bool init();// creating the bool init calss 
@@ -29,8 +26,7 @@ public:
 	bool GetIsScored();
 	void GoToMainMenuScene(Ref *sender);
 	void GoToGameOverScene();
-	void doGameOver();
-	
+
 	CREATE_FUNC(Level_3_Scene);
 
 };

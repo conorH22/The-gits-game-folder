@@ -32,7 +32,7 @@ bool TheOptionsScene::init()
 
 	auto back = MenuItemImage::create("back_button.png", "back_button.png", CC_CALLBACK_1(TheOptionsScene::GoToMainMenuScene, this));
 	back->setPosition(Point(visibleSize.width / 2 + origin.x, visibleSize.height / 6 + origin.y));
-	
+
 	auto back_button = Menu::create(back, NULL);
 	back_button->setPosition(Point::ZERO);
 
@@ -45,5 +45,5 @@ bool TheOptionsScene::init()
 void TheOptionsScene::GoToMainMenuScene(Ref *sender)//go to game scene method implementation 
 {
 	auto scene = MainMenuScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 }

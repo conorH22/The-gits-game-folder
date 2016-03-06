@@ -1,12 +1,10 @@
 
-
 #include "MainMenuScene.h"
 #include "GameScene.h"
-#include "Level1SplashScene.h"
 #include "Definitions.h"
 #include "TheOptionsScene.h"
 #include "SimpleAudioEngine.h"
-//#include "Quit.h"
+#include "Level_1_Splash_Scene.h"
 #include "HowToScene.h"
 
 using namespace CocosDenshion;
@@ -59,9 +57,7 @@ bool MainMenuScene::init()
 
 	//button mapping to other screens
 
-	//when click play it goes to the game scene note when clicked splashscreen appers with level instructions/game rules
-	//auto NewGame = MenuItemImage::create("newGame.png","newGameClicked.png",CC_CALLBACK_1(MainMenuScene::GoToGameScene,this));
-	//NewGame->setPosition(Point(visibleSize.width / 5 + origin.x, visibleSize.height / 5 + origin.y));
+	//when click play it goes to the game scene
 	auto NewGame = MenuItemImage::create("newGame.png", "newGameClicked.png", CC_CALLBACK_1(MainMenuScene::GoToLevel1SplashScene, this));
 	NewGame->setPosition(Point(visibleSize.width / 5 + origin.x, visibleSize.height / 5 + origin.y));
 
@@ -85,30 +81,30 @@ bool MainMenuScene::init()
 	exit->setPosition(Point::ZERO);
 	this->addChild(exit);
 	
-    return true; //apple
+    return true; 
 }
 
 void MainMenuScene::GoToGameScene(Ref *sender)//go to game scene method implementation 
 {
 	auto scene = GameScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
-}
-
-void MainMenuScene::GoToLevel1SplashScene(Ref *sender)//go to game scene method implementation 
-{
-	auto scene = Level1SplashScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 }
 
 void MainMenuScene::GoToTheOptionsScene(Ref *sender)//go to game scene method implementation 
 {
 	auto scene = TheOptionsScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 }
 
 void MainMenuScene::menuCloseCallback(Ref* pSender)
 {
 	Director::getInstance()->end();
+}
+
+void MainMenuScene::GoToLevel1SplashScene(Ref *sender)//go to game scene method implementation 
+{
+	auto scene = Level1SplashScene::createScene();
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 }
 
 // end of game scene woo

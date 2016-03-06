@@ -32,7 +32,7 @@ public:
 	bool GetIsScored();
 	void GoToMainMenuScene(Ref *sender);
 	void GoToGameOverScene();
-	
+	//void GoToGameOverScene();
 	void doGameOver();
 
 	CREATE_FUNC(Mini_Boss_Scene);

@@ -13,14 +13,14 @@ public:
     virtual bool init();
 
     // implement the "static create()" method manually
-	CREATE_FUNC(MainMenuScene); 
+	CREATE_FUNC(MainMenuScene);
 
 private:
 	void GoToTheOptionsScene(Ref *sender);
 	void GoToGameScene(Ref *sender);
-	void GoToLevel1SplashScene(Ref *sender);
 	void menuCloseCallback(cocos2d::Ref* pSender);
-	
+	void GoToLevel1SplashScene(Ref *sender);
+	void GoToMainMenuScene(Ref * sender);
 	
 };
 

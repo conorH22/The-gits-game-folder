@@ -1,12 +1,13 @@
+
 #include "Mini_Boss_Scene.h"//bringing in the game scene
 #include "SimpleAudioEngine.h"//iporting the audio engine
 #include "MainMenuScene.h"
 #include "Definitions.h"
 #include "GameOverScene.h"
-#include"EndGameScene.h"
+#include "WinScene.h"
 
 
-using namespace CocosDenshion; // namespace for audio engine 
+		 using namespace CocosDenshion; // namespace for audio engine 
 using namespace cocos2d;
 
 
@@ -21,7 +22,7 @@ enum class PhysicsCategory
 {
 	None = 0,
 	Boss = (1 << 0),// 1
-	Monster=(1 << 0),
+	Monster = (1 << 0),
 	Projectile = (1 << 1), // 2
 	//All = PhysicsCategory::Monster | PhysicsCategory::Projectile // 3
 };
@@ -62,14 +63,14 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	this->addChild(backgroundSprite);//adding the bacground to the scene
 	// 4
 	_player = Sprite::create("Knight.png");//creating the player, player is made in the header file 
-	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.5));//setting the players location 
+	_player->setPosition(Vec2(winSize.width * 0.1, winSize.height * 0.2));//setting the players location 
 	this->addChild(_player);//adding the player to the scene
 	addMiniBoss();
 	//this->schedule(schedule_selector(Mini_Boss_Scene::addMiniBoss));
 	// this is not used now as the mini boss is the only enemy on screen
 	//adding monsters randomly at ? per second intervial 
 	srand((unsigned int)time(nullptr));
-	this->schedule(schedule_selector(Mini_Boss_Scene::addMonster),1);
+	this->schedule(schedule_selector(Mini_Boss_Scene::addMonster), 0.5);
 
 	//this->schedule(schedule_selector(GameScene::GoToGameOverScene), 20.0f);
 
@@ -112,7 +113,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 
 	this->addChild(scoreLabel, 1000);
 	towerHp = 5;
-
+	/*  // lives not used atm
 	__String *tempLives = __String::createWithFormat("Lives:%d", towerHp);
 
 	livesLabel = Label::create(tempLives->getCString(), "fonts/Marker felt.ttf", winSize.height* LIVES_FONT_SIZE);
@@ -121,6 +122,7 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 	livesLabel->setPosition(winSize.width / 3 + origin.x, winSize.height * LIVES_FONT_SIZE);
 
 	this->addChild(livesLabel, 10);
+	*/
 	return true;// returning that all is ok as is a bool(booean class)
 
 
@@ -129,6 +131,10 @@ bool Mini_Boss_Scene::init()//initing the game so the scene can be made
 
 void Mini_Boss_Scene::addMonster(float dt)
 {
+
+	auto origin = Director::getInstance()->getVisibleOrigin();//setting up the origin 
+	auto winSize = Director::getInstance()->getVisibleSize();// as well as the window size or the visible size as well 
+
 	auto monster = Sprite::create("Shadow1.png");//making the enemy 
 
 	//giving the monster some attributes 
@@ -162,7 +168,7 @@ void Mini_Boss_Scene::addMonster(float dt)
 	auto animation = Animation::createWithSpriteFrames(animFrames, 0.2f);
 	auto animate = Animate::create(animation);
 	monster->runAction(RepeatForever::create(animate));
-										 // 1
+	// 1
 	// giving the monster some movement and coordnates
 	auto monsterContentSize = monster->getContentSize();
 	auto selfContentSize = this->getContentSize();
@@ -182,7 +188,8 @@ void Mini_Boss_Scene::addMonster(float dt)
 
 	// 3
 	//moving and taking off when collided 
-	auto actionMove = MoveTo::create(randomDuration, Vec2(-monsterContentSize.width / 2, randomY));
+	//auto actionMove = MoveTo::create(randomDuration, Vec2(-monsterContentSize.width / 2, randomY));
+	auto actionMove = MoveTo::create(randomDuration, Vec2(winSize.width * 0.1, winSize.height * 0.2));
 	auto actionRemove = RemoveSelf::create();
 	monster->runAction(Sequence::create(actionMove, actionRemove, nullptr));
 }//end of monster 
@@ -204,7 +211,7 @@ void Mini_Boss_Scene::addMiniBoss()
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Boss);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Projectile);
-//  animation for miniboss now used atm
+	//  animation for miniboss now used atm
 	Vector<SpriteFrame*> animFrame(3); //use to test if object is their on right side screen
 
 	for (int i = 1; i < 4; i++)
@@ -218,7 +225,7 @@ void Mini_Boss_Scene::addMiniBoss()
 	auto animation = Animation::createWithSpriteFrames(animFrame, 0.5f);
 	auto animate = Animate::create(animation);
 	MiniBoss->runAction(RepeatForever::create(animate));
-	
+
 	MiniBoss->setPhysicsBody(physicsBody);// adding monster to the physics engine so it can be colided 
 	// 1
 	// giving the monster some movement and coordnates
@@ -230,7 +237,7 @@ void Mini_Boss_Scene::addMiniBoss()
 	int randomY = (rand() % rangeY) + minY;
 
 	MiniBoss->setPosition(Vec2(selfContentSize.width + MiniBossContentSize.width / 2, randomY));
-	//MiniBoss->retain();
+	MiniBoss->retain();
 	EnemyList.pushBack(MiniBoss);
 	this->addChild(MiniBoss);//adding enemy to the layer 
 
@@ -244,12 +251,12 @@ void Mini_Boss_Scene::addMiniBoss()
 	//moving and taking off when collided 
 	auto actionMove = MoveTo::create(randomDuration, Vec2(-MiniBossContentSize.width / 2, randomY));
 	auto actionRemove = RemoveSelf::create();
-	auto delay = DelayTime::create(60.0f);
+	auto delay = DelayTime::create(3.0f);
 	// create a sequence
 	auto delaySequence = Sequence::create(delay, delay->clone(), delay->clone(),
 		delay->clone(), nullptr);
-	
-	MiniBoss->runAction(Sequence::create( delay,actionMove, actionRemove, nullptr));
+
+	MiniBoss->runAction(Sequence::create(delay, actionMove, actionRemove, nullptr));
 
 }// end of mini boss
 
@@ -282,6 +289,7 @@ bool Mini_Boss_Scene::onTouchBegan(Touch * touch, Event *unused_event)
 	physicsBody->setCategoryBitmask((int)PhysicsCategory::Projectile);
 	physicsBody->setCollisionBitmask((int)PhysicsCategory::None);
 	physicsBody->setContactTestBitmask((int)PhysicsCategory::Boss);
+	physicsBody->setContactTestBitmask((int)PhysicsCategory::Monster);
 	projectile->setPhysicsBody(physicsBody);
 
 
@@ -311,8 +319,9 @@ bool Mini_Boss_Scene::onContactBegan(PhysicsContact &contact)
 	auto nodeProjectile = contact.getShapeB()->getBody()->getNode();//could be projectile or visa versa 
 
 	if (nodeEnemy)
-	nodeEnemy->removeFromParent();//remove the enemy 
+		nodeEnemy->removeFromParent();//remove the enemy 
 	SimpleAudioEngine::getInstance()->playEffect(DEATH_SOUND_SFX);//enemy dying sound
+	if (nodeProjectile)
 	nodeProjectile->removeFromParent();//remove the projectile 
 	CCLOG("point added");
 	score++;
@@ -322,10 +331,10 @@ bool Mini_Boss_Scene::onContactBegan(PhysicsContact &contact)
 	scoreLabel->setString(tempScore->getCString());
 	//if score reaches 10 new level or end game scene with transmitions to gameOverscene or new scene 
 
-	if (score == 1)
+	if (score == 41)
 	{
-		auto scene = EndGameScene::createScene();
-		Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+		auto scene = WinScene::createScene();
+		Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 	}
 
 	return true;
@@ -356,7 +365,7 @@ void Mini_Boss_Scene::menuCloseCallback(Ref* pSender)// setting up the close but
 void Mini_Boss_Scene::GoToMainMenuScene(Ref *sender)
 {
 	auto scene = MainMenuScene::createScene();
-	Director::getInstance()->replaceScene(TransitionFade::create(TRANSITION_TIME, scene));
+	Director::getInstance()->replaceScene(TransitionFade::create(TRANSATION_TIME, scene));
 }
 
 //void GameScene::GoToGameOverScene(float dt)
